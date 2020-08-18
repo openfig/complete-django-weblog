@@ -39,9 +39,24 @@
                 <div class="col-6">
                     {{form.status|as_crispy_field}}
                 </div>
+                {% else %}
+                <div class="col-6">
+                    وضعیت
+                    <select name="status" class="select form-control" required="" id="id_status">
+                        <option value="">---------</option>
+                        <option value="d">پیش نویس</option>
+                        <option value="i">ارسال برای برسی</option>
+                    </select>
+                </div>
                 {% endif %}
+                <div class="col-6">
+                {{form.is_special|as_crispy_field}}
+                </div>
             </div>
             <button class="btn btn-success">ارسال مقاله</button>
+            {% if user.is_superuser and request.resolver_match.kwargs.pk %}
+            <a href="{% url 'account:delete' request.resolver_match.kwargs.pk %}" class="btn btn-danger">حذف</a>
+            {% endif %}
         </form>
     </div>
 

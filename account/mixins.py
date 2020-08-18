@@ -1,5 +1,5 @@
 from django.http import Http404
-from django.shortcuts import get_object_or_404
+from django.shortcuts import get_object_or_404,redirect
 from blog.models import Article
 
 class FieldMixin():
@@ -8,13 +8,13 @@ class FieldMixin():
             self.fields = [
                             'author','title','title','slug',
                             'category','description','thumbnail',
-                            'publish','status'
+                            'publish','is_special','status'
                             ]
         elif request.user.is_author:
             self.fields = [
                             'title','title','slug',
                             'category','description','thumbnail',
-                            'publish'
+                            'is_special','publish'
                             ]
         else:
             raise Http404
@@ -26,21 +26,32 @@ class FormValidMixin():
         else:
             self.obj = form.save(commit=False)
             self.obj.author = self.obj.author = self.request.user
-            self.obj.status = 'd'
+            if not self.obj.status == 'i':
+                self.obj.status = 'd'
         return super().form_valid(form)
 
 class AuthorAccessMixin():
     def dispatch(self,request,pk,*args,**kwargs):
         article =get_object_or_404(Article,pk=pk)
 
-        if article.author == request.user and article.status =='d' or request.user.is_superuser :
+        if article.author == request.user and article.status in ['b','d'] or request.user.is_superuser :
             return super().dispatch(request,*args,**kwargs)
         else:
             raise Http404
 
 class SuperUserAccessMixin():
     def dispatch(self,request,*args,**kwargs):
-        if request.user.is_superuser :
+        if request.user.is_authenticated:
+            if request.user.is_superuser :
+                return super().dispatch(request,*args,**kwargs)
+            else:
+                raise Http404
+        else:
+            return redirect('account:login')
+
+class AuthorsAccessMixin():
+    def dispatch(self,request,*args,**kwargs):
+        if request.user.is_superuser or request.user.is_author :
             return super().dispatch(request,*args,**kwargs)
         else:
-            raise Http404
+            return redirect('profile')

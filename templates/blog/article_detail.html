@@ -14,6 +14,9 @@
           <div class="col-lg-8 col-md-10 mx-auto">
             <div class="site-heading">
               <h1>{{object.title}}</h1>
+              {% if article.is_special %}
+                <span class="badge badge-danger">این مقاله ویژه است</span>
+              {% endif %}
               <time>{{object.jpublish}}</time>
             </div>
           </div>
@@ -27,11 +30,21 @@
     <div class="container">
       <div class="row">
         <div class="col-lg-8 col-md-10 mx-auto text-justify">
+          {% if object.is_special %}
+              {% if user.is_authenticated and user.is_special_user or user == object.author or user.is_superuser %}
+              {{object.description|safe}}
+              {%else%}
+              {{article.description|striptags|truncatewords:30}}
+              <p class="alert alert-warning">برای مشاهده این مقاله باید کاربر ویژه باشید <a href="#">اشتراک ویژه</a></p>
+              {% endif %}
+          {% else %}
           {{object.description|safe}}
+          {% endif %}
         </div>
       </div>
     </div>
   </article>
 
   <hr>
+
 {% endblock %}
